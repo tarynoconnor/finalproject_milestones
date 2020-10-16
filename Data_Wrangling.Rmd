@@ -1,0 +1,56 @@
+---
+title: "Milestone"
+author: "Taryn O'Connor"
+date: "10/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+superpac <- read.csv("raw_data/schedule_a-2020-10-14T16_39_02 (1).csv", stringsAsFactors = FALSE)
+
+```
+
+```{r}
+count_n <- superpac %>% 
+  filter(contribution_receipt_amount > 0, entity_type_desc == "INDIVIDUAL") %>% 
+  filter(contribution_receipt_date >= as.Date("2020-01-01")) %>%
+  count(committee_name) %>% 
+  arrange(desc(n))
+
+```
+
+```{r}
+superpac_1 <- superpac %>% 
+  select(committee_name, entity_type_desc, contributor_state, contribution_receipt_date, contribution_receipt_amount) %>% 
+  filter(contribution_receipt_date >= as.Date("2020-01-01")) %>%
+  filter(contribution_receipt_amount > 0, entity_type_desc == "INDIVIDUAL")
+
+superpac_2 <- merge(superpac_1, count_n) %>% 
+  filter(n > 1000) %>% 
+  mutate(contribution_receipt_amount = as.integer(format(contribution_receipt_amount, scientific = FALSE))) %>%
+  mutate(date = as.Date(contribution_receipt_date, "%Y-%m-%d")) %>%
+  mutate(month = as.integer(format(date, "%m"))) %>% 
+  mutate(months = month.name[month]) %>% 
+  mutate(months = ordered(months, month.name)) %>% 
+  mutate(month_num = months(as.Date(contribution_receipt_date))) %>% 
+  group_by(committee_name, month) %>%
+  mutate(month_sum = sum(contribution_receipt_amount)) %>% 
+  mutate(month_sum = as.integer(round(month_sum))) %>% 
+  select(committee_name, months, month, month_sum) %>% 
+  unique()
+
+View(superpac_2)
+```
+```{r}
+saveRDS(superpac_2, "superpac.RDS")
+```
+
+```{r}
+read.delim("raw_data/webl20.txt")
+```
+
