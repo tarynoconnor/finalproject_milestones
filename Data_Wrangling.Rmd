@@ -11,13 +11,17 @@ library(tidyverse)
 ```
 
 ```{r}
-superpac <- read.csv("raw_data/schedule_a-2020-10-14T16_39_02 (1).csv", 
-                     stringsAsFactors = FALSE)
+superpac <- read.csv("raw_data/schedule_a-2020-10-14T16_39_02 (1).csv")
 
+# Here, I loaded the data I downloaded from the FEC into the object "superpac"
 ```
 
 ```{r}
 count_n <- superpac %>% 
+  
+# In order to narrow my data down to only individual contributions in 2020 to super
+# PACs, I used two filters and the count function
+  
   filter(contribution_receipt_amount > 0, entity_type_desc == "INDIVIDUAL") %>% 
   filter(contribution_receipt_date >= as.Date("2020-01-01")) %>%
   count(committee_name) %>% 
@@ -26,25 +30,47 @@ count_n <- superpac %>%
 ```
 
 ```{r}
+# I then repeated this without the count function to create the object "superpac_1"
+# without the count so the count could be merged back into the data
+
 superpac_1 <- superpac %>% 
   select(committee_name, entity_type_desc, contributor_state, 
          contribution_receipt_date, contribution_receipt_amount) %>% 
   filter(contribution_receipt_date >= as.Date("2020-01-01")) %>%
   filter(contribution_receipt_amount > 0, entity_type_desc == "INDIVIDUAL")
 
+# I then merged count_n and superpac_1 to create superpac_2
+
 superpac_2 <- merge(superpac_1, count_n) %>% 
+  
+# I used filter() to focus on super PACs with 1,000 contributions, as I wanted 
+# my final graphs to have enough data to plot. I also didn't want there to be
+# too many choices in the final app
+  
   filter(n > 1000) %>% 
-  mutate(contribution_receipt_amount = 
-           as.integer(format(contribution_receipt_amount,
-                             scientific = FALSE))) %>%
+  
+# I then used a series of mutate functions to format the data so that there would
+# be columns with the month in which the contributions were made. 
+# as.Date(contribution_receipt_date, "%B") would only produce a column of "NA",
+# so I attempted a series of different functions in order to get the data to plot 
+# properly
+  
   mutate(date = as.Date(contribution_receipt_date, "%Y-%m-%d")) %>%
   mutate(month = as.integer(format(date, "%m"))) %>% 
   mutate(months = month.name[month]) %>% 
   mutate(months = ordered(months, month.name)) %>% 
-  mutate(month_num = months(as.Date(contribution_receipt_date))) %>% 
-  group_by(committee_name, month) %>%
+  
+# I then used group_by before mutating the column month_sum in order to get the 
+# monthly contribution #'s for each PAC. I also used round() to get rid of 
+# decimals
+  
+  group_by(committee_name, month) %>% 
   mutate(month_sum = sum(contribution_receipt_amount)) %>% 
   mutate(month_sum = as.integer(round(month_sum))) %>% 
+  
+# I then selected the columns I would need for my app, and used unique() to get
+# rid of any duplicates before saving the data as a .RDS in the next chunk
+  
   select(committee_name, months, month, month_sum) %>% 
   unique()
 
@@ -55,6 +81,9 @@ saveRDS(superpac_2, "superpac.RDS")
 ```
 
 ```{r}
+# Here, I started to attempt to work with a bulk data set I downloaded from the 
+# FEC. However, one column is produced per row containing all the data
+
 read.delim("raw_data/webl20.txt")
 ```
 

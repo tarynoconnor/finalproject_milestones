@@ -4,7 +4,7 @@ library(tidyverse)
 
 superpac_app = readRDS("superpac.RDS")
 
-# Define UI for application that draws a histogram
+# Here is my setup for my model, discussion, and about tabs.
 ui <- navbarPage(
     "Milestone 4",
     tabPanel("Model",
@@ -40,9 +40,9 @@ ui <- navbarPage(
                into a single csv file. Instead, you have to download the bulk data, 
                which raises two issues. First, the file may be too large to load into 
                RStudio on my computer. Also, the data is saved in a .txt file, which 
-               I'm not sure if it can be formatted into R at all, as when I used read.delim(), 
-               for a small .txt file, there is one column for each row containing 
-               multiple variables separated by |.")),
+               I'm not sure if it can be formatted into R at all, as when I used 
+               read.delim(), for a small .txt file, there is one column for each 
+               row containing multiple variables separated by |.")),
     tabPanel("About",
              titlePanel("About"),
              h3("About Me"),
@@ -59,9 +59,17 @@ server <- function(input, output) {
     output$distPlot <- renderPlot({
         superpac_app %>% 
             filter(committee_name == input$committee) %>% 
-            ggplot(aes(x = factor(months, levels = month.name[1:9]), y = month_sum)) +
+            
+# In order to get the months on the graph in order, I used factor() and set levels
+# equal to the first 9 entries in month.name
+            
+            ggplot(aes(x = factor(months, levels = month.name[1:9]), 
+                       y = month_sum)) +
             geom_col() +
             labs(x = "Month", y = "Total Contributions (USD)") +
+            
+# I used labels = scales::comma to get commas on the y axis
+            
             scale_y_continuous(labels = scales::comma)
     })
 }
