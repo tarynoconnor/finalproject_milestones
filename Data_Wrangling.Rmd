@@ -11,7 +11,8 @@ library(tidyverse)
 ```
 
 ```{r}
-superpac <- read.csv("raw_data/schedule_a-2020-10-14T16_39_02 (1).csv", stringsAsFactors = FALSE)
+superpac <- read.csv("raw_data/schedule_a-2020-10-14T16_39_02 (1).csv", 
+                     stringsAsFactors = FALSE)
 
 ```
 
@@ -26,13 +27,16 @@ count_n <- superpac %>%
 
 ```{r}
 superpac_1 <- superpac %>% 
-  select(committee_name, entity_type_desc, contributor_state, contribution_receipt_date, contribution_receipt_amount) %>% 
+  select(committee_name, entity_type_desc, contributor_state, 
+         contribution_receipt_date, contribution_receipt_amount) %>% 
   filter(contribution_receipt_date >= as.Date("2020-01-01")) %>%
   filter(contribution_receipt_amount > 0, entity_type_desc == "INDIVIDUAL")
 
 superpac_2 <- merge(superpac_1, count_n) %>% 
   filter(n > 1000) %>% 
-  mutate(contribution_receipt_amount = as.integer(format(contribution_receipt_amount, scientific = FALSE))) %>%
+  mutate(contribution_receipt_amount = 
+           as.integer(format(contribution_receipt_amount,
+                             scientific = FALSE))) %>%
   mutate(date = as.Date(contribution_receipt_date, "%Y-%m-%d")) %>%
   mutate(month = as.integer(format(date, "%m"))) %>% 
   mutate(months = month.name[month]) %>% 
