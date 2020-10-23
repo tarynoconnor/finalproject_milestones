@@ -84,6 +84,6 @@ saveRDS(superpac_2, "superpac.RDS")
 # Here, I started to attempt to work with a bulk data set I downloaded from the 
 # FEC. However, one column is produced per row containing all the data
 
-read.delim("raw_data/webl20.txt")
+read.csv("raw_data/webl20.txt", sep = "|", header = FALSE)
 ```
 
